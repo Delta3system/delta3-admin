@@ -15,9 +15,30 @@ void Graphics::onDataReceived()
             network_->receivedData().mode == mode_))
 		return;
 
-    const QByteArray &arr = network_->receivedData().data;
+    QByteArray arr = network_->receivedData().data;
 
-    switch((qint8)arr[0]) {
+    switch((quint8)arr[0]) {
+    case GMOD_IMG: {
+        quint16 imgStrctCount = fromBytes<quint16>(arr.mid(1, 2));
+        ImgStructList imageList;
+
+        quint32 ind = 3;
+        for (quint16 x, y, s; imgStrctCount > 0; --imgStrctCount) {
+            x = fromBytes<quint16>(arr.mid(ind, 2)); ind += 2;
+            y = fromBytes<quint16>(arr.mid(ind, 2)); ind += 2;
+            s = fromBytes<quint16>(arr.mid(ind, 2)); ind += 2;
+
+            QImage img;
+            img.loadFromData(arr.mid(ind, s)); ind += s;
+
+            imageList.push_back(ImgStruct(x, y, img));
+
+//            qDebug() << Q_FUNC_INFO << s << x << y;
+        }
+
+        emit images(imageList);
+
+        break; }
     case GMOD_IMGDIFF:
         break;
     case GMOD_IMGFULL: {
@@ -25,11 +46,10 @@ void Graphics::onDataReceived()
         img.loadFromData(arr.mid(1));
         emit imageReady(img);
 
-        break;
-    }
+        break; }
     case GMOD_INFO: {
-        clientWidht_ = fromBytes<qint16>(arr.mid(2,2));
-        clientHeight_ = fromBytes<qint16>(arr.mid(4,2));
+        clientWidht_ = fromBytes<quint16>(arr.mid(2,2));
+        clientHeight_ = fromBytes<quint16>(arr.mid(4,2));
 
         QByteArray send;
         send.append(GMOD_INFO);
@@ -38,8 +58,7 @@ void Graphics::onDataReceived()
         sendData(send);
 
         emit ready(clientWidht_, clientHeight_, 2);
-        break;
-    }
+        break; }
     default:
         break;
     }
