@@ -29,7 +29,7 @@ protected:
 	Network	*network_;
 	qint16	clientId_;
 
-	ProtocolMode protoMode_;
+    ProtocolMode mode_;
 
     void sendData(const QByteArray &arr);
 };

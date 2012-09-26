@@ -14,12 +14,10 @@ Telnet::Telnet(Network *net, qint16 clientId, QObject *parent) :
 void Telnet::onDataReceived()
 {
     if (!(network_->receivedData().from == clientId_ &&
-            network_->receivedData().mode == protoMode_)) {
+            network_->receivedData().mode == mode_)) {
         qDebug() << Q_FUNC_INFO << "PROTOCOL ERROR";
         return;
     }
-
-    qDebug() << "TelnetForm::onDataReceived()";
 
     const QByteArray &arr = network_->receivedData().data;
 
@@ -29,8 +27,6 @@ void Telnet::onDataReceived()
         QString message = QString::fromUtf8(arr.mid(5, size));
 
         emit ready(message);
-
-        qDebug() << Q_FUNC_INFO << message << size;
     }
 
     }
@@ -45,7 +41,6 @@ void Telnet::sendCommand(QString &data)
     send.append(toBytes<quint32>(arr.size()));
     send.append(arr);
 
-    //network_->sendLevelTwo(clientId_, protoMode_, send);
     sendData(send);
 }
 
